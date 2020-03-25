@@ -4,6 +4,7 @@
 #define DDCD_PORT 7654
 #define DDCD_ADDRESS "ucoddcd.xyz"
 #define DDCD_BUFF_SIZE 2048
+#define DDCD_RESERVE_MEMORY_EACH 2048
 
 #define DDCD_OK 0
 #define DDCD_SOCKET_ERROR 1000
@@ -21,11 +22,11 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include <stdio.h>
+#ifdef DEBUG
+    #include <stdio.h>
+#endif
 
-const char* ddcdGetBestRegion() {
-    return "spain";
-}
+const char* ddcdGetBestRegion();
 
 /**
  * @warning This is a blocking function
@@ -49,110 +50,20 @@ const char* ddcdGetBestRegion() {
 int ddcdSendMessageToRegion(
         const char* region,
         const char* request,
-        const int request_len,
+        int request_len,
         char** response,
         int* response_len
-) {
-    // variables initialization
-    int socket_fd, retval, nbytes;
-    char full_address[256];
-    char buffer[DDCD_BUFF_SIZE];
-    char* formatted_request;
-    struct sockaddr_in server_dir;
+);
 
-    // initializes the socket and check for errors
-    socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (socket_fd < 0)
-        return DDCD_SOCKET_ERROR + errno;
 
-    // prepares the full server address based on sub-domain and domain
-    bzero(full_address, 256);
-    bzero((char*)&server_dir, sizeof(server_dir));
-    strcpy(full_address, region);
-    strcat(full_address, ".");
-    strcat(full_address, DDCD_ADDRESS);
-    strcat(full_address, "\0");
-
-    // builds the sockaddr_in struct containing the necessary information to identify the server
-    server_dir.sin_family = AF_INET;
-    #ifdef LOCAL
-        server_dir.sin_addr.s_addr = inet_addr("127.0.0.1");
-    #else
-        server_dir.sin_addr.s_addr = inet_addr(full_address);
-    #endif
-    server_dir.sin_port = htons(DDCD_PORT);
-
-    // connects tho the server
-    retval = connect(
-            socket_fd,
-            (const struct sockaddr*) &server_dir,
-            sizeof(server_dir)
-    );
-    if (retval < 0)
-        return DDCD_CONNECT_ERROR + errno;
-
-    // prepare the formatted request, this should follow the next sintax
-    // {+,-}[control message]<[payload]>
-    // the + indicates all is ok, normally the control message is not needed here
-    // the - indicates the presence of errors, they should be indicated on the control message field
-    // as we are sending the first message, an error is not expected here, there should be no control message.
-    formatted_request = (char*)malloc(sizeof(char) * (request_len + 3));
-    strcpy(formatted_request, "+<");
-    strcat(formatted_request, request);
-    strcat(formatted_request, ">");
-
-    #ifdef DEBUG
-        printf("sending request to {%s}\n", full_address);
-        printf("request {%s}%i\n", formatted_request, request_len);
-    #endif
-    // sends the formatted payload to the server
-    nbytes = send(
-            socket_fd,
-            formatted_request,
-            request_len + 3,
-            0
-    );
-    // free the formatted payload memory
-    free(formatted_request);
-    // check for errors in the send
-    if (nbytes < 0)
-        return DDCD_SEND_ERROR + errno;
-
-    *response_len = 0;
-    bzero(*response, strlen(*response));
-    do {
-        // read from the socket file desriptor
-        bzero(buffer, DDCD_BUFF_SIZE);
-        nbytes = read(
-                socket_fd,
-                buffer,
-                DDCD_BUFF_SIZE
-        );
-        // add the read bytes to the response length
-        (*response_len) += nbytes;
-        #ifdef DEBUG
-            printf("resizing response to %i\n", *response_len);
-        #endif
-        // realocate the memory with the new size
-        (*response) = (char*)realloc((*response), sizeof(char) * (*response_len));
-        // copy the newly read buffer into the final response
-        // can't use strcat Using it is running off the end of the array and corrupting the data structures
-        // used by realloc
-        memcpy((char*)*response + (*response_len) - nbytes, buffer, nbytes);
-        #ifdef DEBUG
-            printf("currently read {%s}%lu\n", *response, strlen(*response));
-        #endif
-    } while (buffer[strlen(buffer)-1]!='>'); // this indicates the end of payload
-    #ifdef DEBUG
-        printf("full response {%s}%lu\n", *response, strlen(*response));
-    #endif
-    // checks for errors
-    if (nbytes < 0)
-        return DDCD_READ_ERROR + errno;
-
-    // return the ok status (0)
-    return DDCD_OK;
-}
-
+int ddcdMatrixMultiplication(
+        int** Ma,
+        int size_ax,
+        int size_ay,
+        int** Mb,
+        int size_bx,
+        int size_by,
+        int*** result
+);
 
 #endif

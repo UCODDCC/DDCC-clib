@@ -2,7 +2,12 @@ cmake_minimum_required (VERSION 2.8.11)
 
 project (DDCD-clib)
 
-add_executable(client main.c)
+set(SOURCES
+        libddcd.c
+)
+
+add_executable(client main.c ${SOURCES})
+
 
 target_include_directories(client PRIVATE ${PROJECT_SOURCE_DIR})
 
