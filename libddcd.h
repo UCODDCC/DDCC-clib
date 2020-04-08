@@ -28,6 +28,14 @@
 
 const char* ddcdGetBestRegion();
 
+int ddccAppendToBuffer(
+        char** buffer,
+        unsigned int* buffer_current_size,
+        unsigned int* buffer_max_size,
+        const char* additional_buffer,
+        unsigned int additional_buffer_length
+);
+
 /**
  * @warning This is a blocking function
  * Sends a command to the server and waits for the response
@@ -47,23 +55,17 @@ const char* ddcdGetBestRegion();
  *
  *          yyy errors should be checked on the linux manual of each function
  */
-int ddcdSendMessageToRegion(
+int ddccSendMessageToRegion(
         const char* region,
         const char* request,
-        int request_len,
+        unsigned int request_len,
         char** response,
-        int* response_len
+        unsigned int* response_len
 );
 
 
-int ddcdMatrixMultiplication(
-        int** Ma,
-        int size_ax,
-        int size_ay,
-        int** Mb,
-        int size_bx,
-        int size_by,
-        int*** result
-);
+int ddccMatrixMultiplication(float** Ma, int size_ax, int size_ay, float** Mb, int size_bx, int size_by, float*** result);
+
+int ddccVectorAddition(float* Va, int size_a, float* Vb, int size_b, float** result) ;
 
 #endif
