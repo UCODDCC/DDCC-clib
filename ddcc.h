@@ -21,12 +21,13 @@
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #ifdef DEBUG
     #include <stdio.h>
 #endif
 
-const char* ddcdGetBestRegion();
+const char* ddccGetBestRegion();
 
 int ddccAppendToBuffer(
         char** buffer,
@@ -56,6 +57,7 @@ int ddccAppendToBuffer(
  *          yyy errors should be checked on the linux manual of each function
  */
 int ddccSendMessageToRegion(
+        const char* address,
         const char* region,
         const char* request,
         unsigned int request_len,
@@ -64,8 +66,24 @@ int ddccSendMessageToRegion(
 );
 
 
-int ddccMatrixMultiplication(float** Ma, int size_ax, int size_ay, float** Mb, int size_bx, int size_by, float*** result);
+int ddccMatrixMultiplication(
+        const char* address,
+        float** Ma,
+        int size_ax,
+        int size_ay,
+        float** Mb,
+        int size_bx,
+        int size_by,
+        float*** result
+);
 
-int ddccVectorAddition(float* Va, int size_a, float* Vb, int size_b, float** result) ;
+int ddccVectorAddition(
+        const char* address,
+        float* Va,
+        int size_a,
+        float* Vb,
+        int size_b,
+        float** result
+) ;
 
 #endif
