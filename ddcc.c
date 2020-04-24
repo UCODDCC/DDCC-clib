@@ -1,6 +1,6 @@
-#include <libddcd.h>
+#include <ddcc.h>
 
-const char* ddcdGetBestRegion() {
+const char* ddccGetBestRegion() {
     return "spain";
 }
 
@@ -16,6 +16,7 @@ int ddccAppendToBuffer(char** buffer, unsigned int* buffer_current_size, unsigne
 }
 
 int ddccSendMessageToRegion(
+        const char* address,
         const char* region,
         const char* request,
         unsigned int request_len,
@@ -126,7 +127,7 @@ int ddccSendMessageToRegion(
 
 
 
-int ddccMatrixMultiplication(float** Ma, int size_ax, int size_ay, float** Mb, int size_bx, int size_by, float*** result) {
+int ddccMatrixMultiplication(const char* address, float** Ma, int size_ax, int size_ay, float** Mb, int size_bx, int size_by, float*** result) {
     char *opcode = "matrix", *subopcode = "multiplication", *payload, *response, buffer[256];
     unsigned int payload_current_size = 0, response_len = 0, payload_max_size = DDCD_RESERVE_MEMORY_EACH;
     payload = (char*)malloc(sizeof(char) * DDCD_RESERVE_MEMORY_EACH);
@@ -150,7 +151,8 @@ int ddccMatrixMultiplication(float** Ma, int size_ax, int size_ay, float** Mb, i
     }
     memcpy((char*)payload + payload_current_size -1 , "}", 1); // overwrites the last comma
     return ddccSendMessageToRegion(
-            "spain",
+            address,
+            ddccGetBestRegion(),
             payload,
             payload_current_size,
             &response,
@@ -159,7 +161,7 @@ int ddccMatrixMultiplication(float** Ma, int size_ax, int size_ay, float** Mb, i
 }
 
 
-int ddccVectorAddition(float* Va, int size_a, float* Vb, int size_b, float** result) {
+int ddccVectorAddition(const char* address, float* Va, int size_a, float* Vb, int size_b, float** result) {
     char *opcode = "vector", *subopcode = "addition", *payload, *response, buffer[256];
     unsigned int payload_current_size = 0, response_len = 0, payload_max_size = DDCD_RESERVE_MEMORY_EACH;
     payload = (char*)malloc(sizeof(char) * DDCD_RESERVE_MEMORY_EACH);
@@ -180,7 +182,8 @@ int ddccVectorAddition(float* Va, int size_a, float* Vb, int size_b, float** res
     // overwrites the last comma with data finalization marker
     memcpy((char*)payload + payload_current_size -1 , "}", 1);
     return ddccSendMessageToRegion(
-            "spain",
+            address,
+            ddccGetBestRegion(),
             payload,
             payload_current_size,
             &response,
